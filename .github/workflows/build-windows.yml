@@ -1,0 +1,44 @@
+name: Build Windows Binary
+
+on:
+  workflow_dispatch: # 支持手动点击一键触发
+  push:
+    branches:
+      - master
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Admin UI
+        shell: bash
+        run: |
+          cd admin-ui
+          pnpm install
+          pnpm build
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build kiro-rs
+        run: cargo build --release
+
+      - name: Upload Windows Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiro-rs-windows-latest
+          path: target/release/kiro-rs.exe
